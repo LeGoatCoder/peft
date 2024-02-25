@@ -20,17 +20,19 @@ from peft.import_utils import is_bnb_4bit_available, is_bnb_available
 
 from .layer import IA3Layer
 
-
+################################################################################
+# Linear8bitLt class
+################################################################################
 if is_bnb_available():
 
     class Linear8bitLt(torch.nn.Module, IA3Layer):
         # (IA)^3 implemented in a dense layer
         def __init__(
             self,
-            base_layer: torch.nn.Module,
-            adapter_name: str,
-            is_feedforward: bool,
-            init_ia3_weights: bool = True,
+            base_layer: torch.nn.Module,  # the base layer to be adapted
+            adapter_name: str,  # the name of the adapter
+            is_feedforward: bool,  # whether the layer is a feedforward layer
+            init_ia3_weights: bool = True,  # whether to initialize the ia3 weights
             **kwargs,
         ) -> None:
             super().__init__()
@@ -72,17 +74,19 @@ if is_bnb_available():
             rep = super().__repr__()
             return "ia3." + rep
 
-
+################################################################################
+# Linear4bit class
+################################################################################
 if is_bnb_4bit_available():
 
     class Linear4bit(torch.nn.Module, IA3Layer):
         # IA3 implemented in a dense layer
         def __init__(
             self,
-            base_layer: torch.nn.Module,
-            adapter_name: str,
-            is_feedforward: bool,
-            init_ia3_weights: bool = True,
+            base_layer: torch.nn.Module,  # the base layer to be adapted
+            adapter_name: str,  # the name of the adapter
+            is_feedforward: bool,  # whether the layer is a feedforward layer
+            init_ia3_weights: bool = True,  # whether to initialize the ia3 weights
             **kwargs,
         ) -> None:
             super().__init__()
