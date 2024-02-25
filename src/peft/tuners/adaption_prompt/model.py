@@ -12,12 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import torch.nn as nn
 from typing import Dict, List
 
-import torch.nn as nn
-
 from peft.utils import _freeze_adapter, _get_submodules
-
 from .config import AdaptionPromptConfig, prepare_config
 from .layer import AdaptedAttention
 from .utils import is_adaption_prompt_trainable
@@ -29,33 +27,27 @@ class AdaptionPromptModel(nn.Module):
 
     The top L attention modules are replaced with AdaptedAttention modules that wrap the original ones, but insert
     trainable prompts with gates (for zero init).
-
-    Notes on the multi-adapter pattern:
-    - We store the states of different adapters by keeping a dictionary of AdaptedAttention modules indexed by adapter
-      name.
-    - Every time we switch adapters, we remove the modules of the currently active adapter from the model, store them
-      in the dictionary, and replace them with the modules of the new adapter.
-    - To avoid duplicated and potentially inconsistent state, the currently active adapter is always removed from the
-      dictionary.
-    - Disabling the adapter would also result in the modules being removed from the model.
     """
 
     def __init__(self, model, configs: Dict, adapter_name: str):
         super().__init__()
+        # Save the original model
         self.model = model
-        # Store adapter configs by name.
+        # Store adapter configs by name
         self.peft_config: Dict[str, AdaptionPromptConfig] = {}
-        # Store lists of the parents of the affected attention modules by adapter name.
-        # We keep references to the parents so we can swap the adapters in-and-out of the model.
+        # Store lists of the parents of the affected attention modules by adapter name
         self._parents: Dict[str, List[nn.Module]] = {}
-        # Store lists of cached AdaptedAttention modules by name.
+        # Store lists of cached AdaptedAttention modules by name
         self._cached_adapters: Dict[str, List] = {}
-        # The name of the currently active adapter.
+        # The name of the currently active adapter
         self._active_adapter = None
-        # Whether the adapter is enabled.
+        # Whether the adapter is enabled
         self._enabled = True
+        # Set forward method to the original model's forward method
         self.forward = self.model.forward
+        # Add the first adapter
         self.add_adapter(adapter_name, configs[adapter_name])
+        # Freeze all parameters of the model except the adaption prompts
         self._mark_only_adaption_prompts_as_trainable(self.model)
 
     def add_adapter(self, adapter_name: str, config: AdaptionPromptConfig) -> None:
@@ -129,33 +121,3 @@ class AdaptionPromptModel(nn.Module):
 
     def _set_adapted_attentions(self, adapter_name: str) -> None:
         """Replace LlamaAttention modules with cached AdaptedAttention modules."""
-        cached = self._cached_adapters[adapter_name]
-        del self._cached_adapters[adapter_name]
-        config = self.peft_config[adapter_name]
-        for i, par in enumerate(self._parents[adapter_name]):
-            setattr(par, config.target_modules, cached[i])
-
-    def _remove_adapted_attentions(self, adapter_name: str) -> None:
-        """Remove AdaptedAttention modules from the model and store them in the cache."""
-        config = self.peft_config[adapter_name]
-        adapted_attentions = []
-        for par in self._parents[adapter_name]:
-            attn = getattr(par, config.target_modules)
-            adapted_attentions.append(attn)
-            setattr(par, config.target_modules, attn.model)
-        self._cached_adapters[adapter_name] = adapted_attentions
-
-    def _mark_only_adaption_prompts_as_trainable(self, model: nn.Module) -> None:
-        """Freeze all parameters of the model except the adaption prompts."""
-        for n, p in model.named_parameters():
-            if not is_adaption_prompt_trainable(n):
-                p.requires_grad = False
-
-    def __getattr__(self, name: str):
-        """Forward missing attributes to the wrapped module."""
-        try:
-            return super().__getattr__(name)  # defer to nn.Module's logic
-        except AttributeError:
-            # This is necessary as e.g. causal models have various methods that we
-            # don't want to re-implement here.
-            return getattr(self.model, name)
