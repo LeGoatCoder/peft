@@ -1,33 +1,33 @@
-# Copyright 2023-present the HuggingFace Inc. team.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# Copyright notice and license information
 
-import pytest
-
+import pytest  # Import the pytest module for testing
 
 def pytest_addoption(parser):
-    parser.addoption("--regression", action="store_true", default=False, help="run regression tests")
+    """
+    Add a command-line option for running regression tests.
 
+    Args:
+        parser (pytest.Parser): The parser object for defining command-line options.
+    """
+    parser.addoption(
+        "--regression",  # Option name
+        action="store_true",  # Store as a boolean flag
+        default=False,  # Default value
+        help="run regression tests"  # Help text
+    )
 
 def pytest_configure(config):
-    config.addinivalue_line("markers", "regression: mark regression tests")
+    """
+    Add a mark to identify regression tests.
 
+    Args:
+        config (pytest.Config): The pytest configuration object.
+    """
+    config.addinivalue_line(
+        "markers",  # Section to add the value to
+        "regression: mark regression tests"  # Value to add
+    )
 
 def pytest_collection_modifyitems(config, items):
-    if config.getoption("--regression"):
-        return
+    """
 
-    skip_regression = pytest.mark.skip(reason="need --regression option to run regression tests")
-    for item in items:
-        if "regression" in item.keywords:
-            item.add_marker(skip_regression)
