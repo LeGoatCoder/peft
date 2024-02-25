@@ -1,6 +1,17 @@
-transformers
-accelerate
-evaluate
-deepspeed
-tqdm
-datasets
+# imports for transformers library which provides thousands of pretrained models to perform tasks on texts
+import transformers
+
+# imports for accelerate library which helps in training models faster using mixed precision, model parallelism, and distributed training
+import accelerate
+
+# imports for evaluate library which provides utilities for evaluating models
+import evaluate
+
+# imports for deepspeed library which is a deep learning framework for training large models
+import deepspeed
+
+# imports for tqdm library which provides a fast, extensible progress bar for Python
+import tqdm
+
+# imports for datasets library which provides a simple way to download, load, and manipulate datasets
+import datasets
