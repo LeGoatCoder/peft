@@ -15,14 +15,16 @@
 from dataclasses import dataclass, field
 from typing import List, Optional, Union
 
-from peft.tuners.lycoris_utils import LycorisConfig
-from peft.utils import PeftType
+import peft.tuners.lycoris_utils  # Import LycorisConfig from peft.tuners.lycoris_utils
+import peft.utils  # Import PeftType from peft.utils
 
 
 @dataclass
 class LoKrConfig(LycorisConfig):
     """
     Configuration class of [`LoKrModel`].
+
+    This class defines the configuration for the LoKrModel. It inherits from LycorisConfig and adds several new fields.
 
     Args:
         r (`int`):
@@ -66,6 +68,7 @@ class LoKrConfig(LycorisConfig):
             List of modules apart from adapter layers to be set as trainable and saved in the final checkpoint.
     """
 
+    # Define the fields for the LoKrConfig class
     r: int = field(default=8, metadata={"help": "LoKr rank"})
     alpha: int = field(default=8, metadata={"help": "LoKr alpha"})
     rank_dropout: float = field(
@@ -109,19 +112,3 @@ class LoKrConfig(LycorisConfig):
         },
     )
     layers_pattern: Optional[str] = field(
-        default=None,
-        metadata={
-            "help": "The layer pattern name, used only if `layers_to_transform` is different to None and if the layer pattern is not in the common layers pattern."
-        },
-    )
-    modules_to_save: Optional[List[str]] = field(
-        default=None,
-        metadata={
-            "help": "List of modules apart from LoKr layers to be set as trainable and saved in the final checkpoint. "
-            "For example, in Sequence Classification or Token Classification tasks, "
-            "the final layer `classifier/score` are randomly initialized and as such need to be trainable and saved."
-        },
-    )
-
-    def __post_init__(self):
-        self.peft_type = PeftType.LOKR
