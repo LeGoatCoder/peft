@@ -1,11 +1,29 @@
+# The code is a YAML file that defines a hierarchical structure of sections and sub-sections. 
+
+# Each section has a title and a list of sections or local entries. 
+
+# The title field is a string that describes the content of the section.
+
+# The local entries are references to other sections with the same parent.
+
+# The 'local' key indicates that the section is defined in the same YAML file.
+
+# For example, the 'Get started' section has three sub-sections: '🤗 PEFT', 'Quicktour', and 'Installation'.
+
+# Each of these sub-sections is defined locally, meaning that they are also defined in the same YAML file.
+
 - title: Get started
-  sections:
-  - local: index
+  sections:  # The sections field is a list of section dictionaries.
+  - local: index  # Each section dictionary has a 'local' key that refers to the local section.
     title: 🤗 PEFT
   - local: quicktour
     title: Quicktour
   - local: install
     title: Installation
+
+# The 'Tutorial' section has two sub-sections: 'PEFT model configuration' and 'Integrations'.
+
+# These sub-sections are also defined locally.
 
 - title: Tutorial
   sections:
@@ -13,6 +31,10 @@
     title: Configurations and models
   - local: tutorial/peft_integrations
     title: Integrations
+
+# The 'PEFT method guides' section has three sub-sections: 'Prompt-based methods', 'LoRA methods', and 'IA3'.
+
+# These sub-sections are also defined locally.
 
 - title: PEFT method guides
   sections:
@@ -22,6 +44,10 @@
     title: LoRA methods
   - local: task_guides/ia3
     title: IA3
+
+# The 'Developer guides' section has eight sub-sections: 'Model merging', 'Quantization', 'LoRA', 'Custom models', 'Adapter injection', 'Mixed adapter types', 'Contribute to PEFT', and 'Troubleshooting'.
+
+# These sub-sections are also defined locally.
 
 - title: Developer guides
   sections:
@@ -42,12 +68,20 @@
   - local: developer_guides/troubleshooting
     title: Troubleshooting
 
+# The '🤗 Accelerate integrations' section has two sub-sections: 'DeepSpeed' and 'Fully Sharded Data Parallel'.
+
+# These sub-sections are also defined locally.
+
 - title: 🤗 Accelerate integrations
   sections:
   - local: accelerate/deepspeed-zero3-offload
     title: DeepSpeed
   - local: accelerate/fsdp
     title: Fully Sharded Data Parallel
+
+# The 'Conceptual guides' section has three sub-sections: 'Adapters', 'Soft prompts', and 'IA3'.
+
+# These sub-sections are also defined locally.
 
 - title: Conceptual guides
   sections:
@@ -58,50 +92,19 @@
   - local: conceptual_guides/ia3
     title: IA3
 
-- sections:
-  - sections:
-    - local: package_reference/auto_class
-      title: AutoPeftModel
-    - local: package_reference/peft_model
-      title: PEFT model
-    - local: package_reference/peft_types
-      title: PEFT types
-    - local: package_reference/config
-      title: Configuration
-    - local: package_reference/tuners
-      title: Tuner
-    title: Main classes
-  - sections:
-    - local: package_reference/adalora
-      title: AdaLoRA
-    - local: package_reference/ia3
-      title: IA3
-    - local: package_reference/llama_adapter
-      title: Llama-Adapter
-    - local: package_reference/loha
-      title: LoHa
-    - local: package_reference/lokr
-      title: LoKr
-    - local: package_reference/lora
-      title: LoRA
-    - local: package_reference/adapter_utils
-      title: LyCORIS
-    - local: package_reference/multitask_prompt_tuning
-      title: Multitask Prompt Tuning
-    - local: package_reference/oft
-      title: OFT
-    - local: package_reference/poly
-      title: Polytropon
-    - local: package_reference/p_tuning
-      title: P-tuning
-    - local: package_reference/prefix_tuning
-      title: Prefix tuning
-    - local: package_reference/prompt_tuning
-      title: Prompt tuning
-    title: Adapters
-  - sections:
-    - local: package_reference/merge_utils
-      title: Model merge
-    title: Utilities
-  title: API reference
+# The 'API reference' section has three sub-sections: 'Main classes', 'Adapters', and 'Utilities'.
 
+# Each of these sub-sections has a list of section dictionaries that define the content of the sub-section.
+
+# For example, the 'Main classes' sub-section has six section dictionaries: 'AutoPeftModel', 'PEFT model', 'PEFT types', 'Configuration', 'Tuner', and 'Main classes'.
+
+# Each section dictionary has a 'local' key that refers to the local section.
+
+# The 'Adapters' sub-section has 13 section dictionaries that define the different types of adapters.
+
+# The 'Utilities' sub-section has one section dictionary that defines the model merge utility.
+
+title: API reference
+sections:
+  - sections:
+    - local: package
