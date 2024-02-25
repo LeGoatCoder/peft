@@ -12,21 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Based on https://github.com/NVIDIA/NeMo/blob/main/nemo/collections/nlp/modules/common/prompt_encoder.py
-# with some refactor
 import warnings
 
 import torch
-
 from .config import PromptEncoderConfig, PromptEncoderReparameterizationType
-
 
 class PromptEncoder(torch.nn.Module):
     """
     The prompt encoder network that is used to generate the virtual token embeddings for p-tuning.
 
     Args:
-        config ([`PromptEncoderConfig`]): The configuration of the prompt encoder.
+        config (PromptEncoderConfig): The configuration of the prompt encoder.
 
     Example:
 
@@ -62,13 +58,12 @@ class PromptEncoder(torch.nn.Module):
         - **encoder_type** (Union[[`PromptEncoderReparameterizationType`], `str`]): The encoder type of the prompt
           encoder.
 
-
     Input shape: (`batch_size`, `total_virtual_tokens`)
 
     Output shape: (`batch_size`, `total_virtual_tokens`, `token_dim`)
     """
 
-    def __init__(self, config):
+    def __init__(self, config: PromptEncoderConfig):
         super().__init__()
         self.token_dim = config.token_dim
         self.input_size = self.token_dim
@@ -79,6 +74,7 @@ class PromptEncoder(torch.nn.Module):
 
         # embedding
         self.embedding = torch.nn.Embedding(self.total_virtual_tokens, self.token_dim)
+
         if not config.inference_mode:
             if self.encoder_type == PromptEncoderReparameterizationType.LSTM:
                 lstm_dropout = config.encoder_dropout
@@ -119,12 +115,13 @@ class PromptEncoder(torch.nn.Module):
                 raise ValueError("Prompt encoder type not recognized. Please use one of MLP (recommended) or LSTM.")
 
     def forward(self, indices):
-        input_embeds = self.embedding(indices)
-        if self.encoder_type == PromptEncoderReparameterizationType.LSTM:
-            output_embeds = self.mlp_head(self.lstm_head(input_embeds)[0])
-        elif self.encoder_type == PromptEncoderReparameterizationType.MLP:
-            output_embeds = self.mlp_head(input_embeds)
-        else:
-            raise ValueError("Prompt encoder type not recognized. Please use one of MLP (recommended) or LSTM.")
+        """
+        The forward pass of the prompt encoder.
 
-        return output_embeds
+        Args:
+            indices (torch.Tensor): The indices of the virtual tokens.
+
+        Returns:
+            torch.Tensor: The output embeddings of the virtual tokens.
+        """
+       
