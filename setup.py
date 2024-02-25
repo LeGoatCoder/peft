@@ -12,47 +12,43 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from setuptools import find_packages, setup
+from setuptools import find_packages, setup  # Import required modules
 
-
+# Set the version of the package
 VERSION = "0.8.2"
 
-extras = {}
-extras["quality"] = [
-    "black",  # doc-builder has an implicit dependency on Black, see huggingface/doc-builder#434
-    "hf-doc-builder",
-    "ruff~=0.2.1",
-]
-extras["docs_specific"] = [
-    "black",  # doc-builder has an implicit dependency on Black, see huggingface/doc-builder#434
-    "hf-doc-builder",
-]
-extras["dev"] = extras["quality"] + extras["docs_specific"]
-extras["test"] = extras["dev"] + [
-    "pytest",
-    "pytest-cov",
-    "pytest-xdist",
-    "parameterized",
-    "datasets",
-    "diffusers<0.21.0",
-    "scipy",
-]
+# Define extras dependencies for different use cases
+extras = {
+    "quality": ["black", "hf-doc-builder", "ruff~=0.2.1"],
+    "docs_specific": ["black", "hf-doc-builder"],
+    "dev": extras["quality"] + extras["docs_specific"],
+    "test": extras["dev"] + [
+        "pytest",
+        "pytest-cov",
+        "pytest-xdist",
+        "parameterized",
+        "datasets",
+        "diffusers<0.21.0",
+        "scipy",
+    ],
+}
 
+# Configure the setup function with required parameters
 setup(
     name="peft",
     version=VERSION,
     description="Parameter-Efficient Fine-Tuning (PEFT)",
-    license_files=["LICENSE"],
+    license_files=["LICENSE"],  # Include the license file
     long_description=open("README.md", encoding="utf-8").read(),
-    long_description_content_type="text/markdown",
+    long_description_content_type="text/markdown",  # Set the content type of the long description
     keywords="deep learning",
     license="Apache",
     author="The HuggingFace team",
     author_email="sourab@huggingface.co",
     url="https://github.com/huggingface/peft",
-    package_dir={"": "src"},
-    packages=find_packages("src"),
-    package_data={"peft": ["py.typed"]},
+    package_dir={"": "src"},  # Set the package directory
+    packages=find_packages("src"),  # Find packages in the package directory
+    package_data={"peft": ["py.typed"]},  # Include package data
     entry_points={},
     python_requires=">=3.8.0",
     install_requires=[
@@ -67,7 +63,7 @@ setup(
         "safetensors",
         "huggingface_hub>=0.17.0",
     ],
-    extras_require=extras,
+    extras_require=extras,  # Include extras dependencies
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
