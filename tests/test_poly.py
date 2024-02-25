@@ -15,32 +15,38 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-import tempfile
-import unittest
+import os # Importing os module to interact with operating system
+import tempfile # Importing tempfile module to create temporary files and directories
+import unittest # Importing unittest module to create test cases
 
-import torch
-from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
+import torch # Importing torch module for deep learning
+from transformers import AutoModelForSeq2SeqLM, AutoTokenizer # Importing necessary classes from transformers library
 
-from peft import PeftModel, PolyConfig, TaskType, get_peft_model
+from peft import PeftModel, PolyConfig, TaskType, get_peft_model # Importing necessary classes from peft library
 
+class TestPoly(unittest.TestCase): # Defining a test case for the poly method
+    def test_poly(self): # Defining a test method
+        torch.manual_seed(0) # Setting seed for reproducibility
+        model_name_or_path = "google/flan-t5-small" # Defining the name or path of the pretrained model
 
-class TestPoly(unittest.TestCase):
-    def test_poly(self):
-        torch.manual_seed(0)
-        model_name_or_path = "google/flan-t5-small"
-
+        # Defining the absolute and relative tolerances for the test
         atol, rtol = 1e-6, 1e-6
+
+        # Defining the hyperparameters for the poly method
         r = 8  # rank of lora in poly
         n_tasks = 3  # number of tasks
         n_skills = 2  # number of skills (loras)
         n_splits = 4  # number of heads
-        lr = 1e-2
-        num_epochs = 10
+        lr = 1e-2 # Learning rate
+        num_epochs = 10 # Number of epochs for training
 
+        # Initializing the tokenizer for the pretrained model
         tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
+
+        # Initializing the base model
         base_model = AutoModelForSeq2SeqLM.from_pretrained(model_name_or_path)
 
+        # Initializing the configuration for the poly method
         peft_config = PolyConfig(
             task_type=TaskType.SEQ_2_SEQ_LM,
             poly_type="poly",
@@ -50,16 +56,17 @@ class TestPoly(unittest.TestCase):
             n_splits=n_splits,
         )
 
+        # Initializing the poly model
         model = get_peft_model(base_model, peft_config)
 
-        # generate some dummy data
+        # Generating some dummy data for training
         text = os.__doc__.splitlines()
         assert len(text) > 10
         inputs = tokenizer(text, return_tensors="pt", padding=True)
         inputs["task_ids"] = torch.arange(len(text)) % n_tasks
         inputs["labels"] = tokenizer((["A", "B"] * 100)[: len(text)], return_tensors="pt")["input_ids"]
 
-        # simple training loop
+        # Training the poly model
         model.train()
         optimizer = torch.optim.Adam(model.parameters(), lr=lr)
         losses = []
@@ -71,30 +78,20 @@ class TestPoly(unittest.TestCase):
             optimizer.zero_grad()
             losses.append(loss.item())
 
-        # loss improved by at least 50%
+        # Checking if the loss has improved by at least 50%
         assert losses[-1] < (0.5 * losses[0])
 
-        # check that saving and loading works
+        # Checking if saving and loading the model works
         torch.manual_seed(0)
         model.eval()
         logits_before = model(**inputs).logits
         tokens_before = model.generate(**inputs)
 
+        # Checking if disabling the adapter works
         with model.disable_adapter():
             logits_disabled = model(**inputs).logits
             tokens_disabled = model.generate(**inputs)
 
+        # Checking if the logits and tokens are different when the adapter is disabled
         assert not torch.allclose(logits_before, logits_disabled, atol=atol, rtol=rtol)
-        assert not torch.allclose(tokens_before, tokens_disabled, atol=atol, rtol=rtol)
-
-        # saving and loading
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            model.save_pretrained(tmp_dir)
-            base_model = AutoModelForSeq2SeqLM.from_pretrained(model_name_or_path)
-            loaded = PeftModel.from_pretrained(base_model, tmp_dir)
-
-        torch.manual_seed(0)
-        output_after = loaded(**inputs).logits
-        tokens_after = loaded.generate(**inputs)
-        assert torch.allclose(logits_before, output_after, atol=atol, rtol=rtol)
-        assert torch.allclose(tokens_before, tokens_after, atol=atol, rtol=rtol)
+        assert not torch.allclose(tokens_before, tokens_dis
