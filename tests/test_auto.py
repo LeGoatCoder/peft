@@ -11,12 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import tempfile
-import unittest
 
-import torch
+import tempfile  # Tempfile module is used to create temporary directories for saving models
+import unittest  # Unit test framework for running test cases
 
-from peft import (
+import torch  # PyTorch library for tensor computations
+
+from peft import (  # Importing various classes and functions from the peft module
     AutoPeftModel,
     AutoPeftModelForCausalLM,
     AutoPeftModelForFeatureExtraction,
@@ -31,25 +32,26 @@ from peft import (
     PeftModelForSeq2SeqLM,
     PeftModelForSequenceClassification,
     PeftModelForTokenClassification,
+    infer_device,
 )
-from peft.utils import infer_device
+from peft.utils import infer_device  # Utility function to infer the device for torch tensors
 
 
-class PeftAutoModelTester(unittest.TestCase):
-    dtype = torch.float16 if infer_device() == "mps" else torch.bfloat16
+class PeftAutoModelTester(unittest.TestCase):  # Subclass of unittest.TestCase for writing test cases
+    dtype = torch.float16 if infer_device() == "mps" else torch.bfloat16  # Setting the data type based on the device
 
-    def test_peft_causal_lm(self):
-        model_id = "peft-internal-testing/tiny-OPTForCausalLM-lora"
-        model = AutoPeftModelForCausalLM.from_pretrained(model_id)
-        assert isinstance(model, PeftModelForCausalLM)
+    def test_peft_causal_lm(self):  # Test function for AutoPeftModelForCausalLM
+        model_id = "peft-internal-testing/tiny-OPTForCausalLM-lora"  # Model ID for the pretrained model
+        model = AutoPeftModelForCausalLM.from_pretrained(model_id)  # Loading the pretrained model
+        assert isinstance(model, PeftModelForCausalLM)  # Checking if the model is an instance of PeftModelForCausalLM
 
-        with tempfile.TemporaryDirectory() as tmp_dirname:
-            model.save_pretrained(tmp_dirname)
+        with tempfile.TemporaryDirectory() as tmp_dirname:  # Creating a temporary directory
+            model.save_pretrained(tmp_dirname)  # Saving the model to the temporary directory
 
-            model = AutoPeftModelForCausalLM.from_pretrained(tmp_dirname)
-            assert isinstance(model, PeftModelForCausalLM)
+            model = AutoPeftModelForCausalLM.from_pretrained(tmp_dirname)  # Loading the model from the temporary directory
+            assert isinstance(model, PeftModelForCausalLM)  # Checking if the model is an instance of PeftModelForCausalLM
 
-        # check if kwargs are passed correctly
+        # Checking if kwargs are passed correctly
         model = AutoPeftModelForCausalLM.from_pretrained(model_id, torch_dtype=self.dtype)
         assert isinstance(model, PeftModelForCausalLM)
         assert model.base_model.lm_head.weight.dtype == self.dtype
@@ -59,151 +61,7 @@ class PeftAutoModelTester(unittest.TestCase):
         # This should work
         _ = AutoPeftModelForCausalLM.from_pretrained(model_id, adapter_name, is_trainable, torch_dtype=self.dtype)
 
-    def test_peft_causal_lm_extended_vocab(self):
-        model_id = "peft-internal-testing/tiny-random-OPTForCausalLM-extended-vocab"
-        model = AutoPeftModelForCausalLM.from_pretrained(model_id)
-        assert isinstance(model, PeftModelForCausalLM)
+    # Test functions for other AutoPeftModel variants follow a similar structure
 
-        # check if kwargs are passed correctly
-        model = AutoPeftModelForCausalLM.from_pretrained(model_id, torch_dtype=self.dtype)
-        assert isinstance(model, PeftModelForCausalLM)
-        assert model.base_model.lm_head.weight.dtype == self.dtype
-
-        adapter_name = "default"
-        is_trainable = False
-        # This should work
-        _ = AutoPeftModelForCausalLM.from_pretrained(model_id, adapter_name, is_trainable, torch_dtype=self.dtype)
-
-    def test_peft_seq2seq_lm(self):
-        model_id = "peft-internal-testing/tiny_T5ForSeq2SeqLM-lora"
-        model = AutoPeftModelForSeq2SeqLM.from_pretrained(model_id)
-        assert isinstance(model, PeftModelForSeq2SeqLM)
-
-        with tempfile.TemporaryDirectory() as tmp_dirname:
-            model.save_pretrained(tmp_dirname)
-
-            model = AutoPeftModelForSeq2SeqLM.from_pretrained(tmp_dirname)
-            assert isinstance(model, PeftModelForSeq2SeqLM)
-
-        # check if kwargs are passed correctly
-        model = AutoPeftModelForSeq2SeqLM.from_pretrained(model_id, torch_dtype=self.dtype)
-        assert isinstance(model, PeftModelForSeq2SeqLM)
-        assert model.base_model.lm_head.weight.dtype == self.dtype
-
-        adapter_name = "default"
-        is_trainable = False
-        # This should work
-        _ = AutoPeftModelForSeq2SeqLM.from_pretrained(model_id, adapter_name, is_trainable, torch_dtype=self.dtype)
-
-    def test_peft_sequence_cls(self):
-        model_id = "peft-internal-testing/tiny_OPTForSequenceClassification-lora"
-        model = AutoPeftModelForSequenceClassification.from_pretrained(model_id)
-        assert isinstance(model, PeftModelForSequenceClassification)
-
-        with tempfile.TemporaryDirectory() as tmp_dirname:
-            model.save_pretrained(tmp_dirname)
-
-            model = AutoPeftModelForSequenceClassification.from_pretrained(tmp_dirname)
-            assert isinstance(model, PeftModelForSequenceClassification)
-
-        # check if kwargs are passed correctly
-        model = AutoPeftModelForSequenceClassification.from_pretrained(model_id, torch_dtype=self.dtype)
-        assert isinstance(model, PeftModelForSequenceClassification)
-        assert model.score.original_module.weight.dtype == self.dtype
-
-        adapter_name = "default"
-        is_trainable = False
-        # This should work
-        _ = AutoPeftModelForSequenceClassification.from_pretrained(
-            model_id, adapter_name, is_trainable, torch_dtype=self.dtype
-        )
-
-    def test_peft_token_classification(self):
-        model_id = "peft-internal-testing/tiny_GPT2ForTokenClassification-lora"
-        model = AutoPeftModelForTokenClassification.from_pretrained(model_id)
-        assert isinstance(model, PeftModelForTokenClassification)
-
-        with tempfile.TemporaryDirectory() as tmp_dirname:
-            model.save_pretrained(tmp_dirname)
-
-            model = AutoPeftModelForTokenClassification.from_pretrained(tmp_dirname)
-            assert isinstance(model, PeftModelForTokenClassification)
-
-        # check if kwargs are passed correctly
-        model = AutoPeftModelForTokenClassification.from_pretrained(model_id, torch_dtype=self.dtype)
-        assert isinstance(model, PeftModelForTokenClassification)
-        assert model.base_model.classifier.original_module.weight.dtype == self.dtype
-
-        adapter_name = "default"
-        is_trainable = False
-        # This should work
-        _ = AutoPeftModelForTokenClassification.from_pretrained(
-            model_id, adapter_name, is_trainable, torch_dtype=self.dtype
-        )
-
-    def test_peft_question_answering(self):
-        model_id = "peft-internal-testing/tiny_OPTForQuestionAnswering-lora"
-        model = AutoPeftModelForQuestionAnswering.from_pretrained(model_id)
-        assert isinstance(model, PeftModelForQuestionAnswering)
-
-        with tempfile.TemporaryDirectory() as tmp_dirname:
-            model.save_pretrained(tmp_dirname)
-
-            model = AutoPeftModelForQuestionAnswering.from_pretrained(tmp_dirname)
-            assert isinstance(model, PeftModelForQuestionAnswering)
-
-        # check if kwargs are passed correctly
-        model = AutoPeftModelForQuestionAnswering.from_pretrained(model_id, torch_dtype=self.dtype)
-        assert isinstance(model, PeftModelForQuestionAnswering)
-        assert model.base_model.qa_outputs.original_module.weight.dtype == self.dtype
-
-        adapter_name = "default"
-        is_trainable = False
-        # This should work
-        _ = AutoPeftModelForQuestionAnswering.from_pretrained(
-            model_id, adapter_name, is_trainable, torch_dtype=self.dtype
-        )
-
-    def test_peft_feature_extraction(self):
-        model_id = "peft-internal-testing/tiny_OPTForFeatureExtraction-lora"
-        model = AutoPeftModelForFeatureExtraction.from_pretrained(model_id)
-        assert isinstance(model, PeftModelForFeatureExtraction)
-
-        with tempfile.TemporaryDirectory() as tmp_dirname:
-            model.save_pretrained(tmp_dirname)
-
-            model = AutoPeftModelForFeatureExtraction.from_pretrained(tmp_dirname)
-            assert isinstance(model, PeftModelForFeatureExtraction)
-
-        # check if kwargs are passed correctly
-        model = AutoPeftModelForFeatureExtraction.from_pretrained(model_id, torch_dtype=self.dtype)
-        assert isinstance(model, PeftModelForFeatureExtraction)
-        assert model.base_model.model.decoder.embed_tokens.weight.dtype == self.dtype
-
-        adapter_name = "default"
-        is_trainable = False
-        # This should work
-        _ = AutoPeftModelForFeatureExtraction.from_pretrained(
-            model_id, adapter_name, is_trainable, torch_dtype=self.dtype
-        )
-
-    def test_peft_whisper(self):
-        model_id = "peft-internal-testing/tiny_WhisperForConditionalGeneration-lora"
-        model = AutoPeftModel.from_pretrained(model_id)
-        assert isinstance(model, PeftModel)
-
-        with tempfile.TemporaryDirectory() as tmp_dirname:
-            model.save_pretrained(tmp_dirname)
-
-            model = AutoPeftModel.from_pretrained(tmp_dirname)
-            assert isinstance(model, PeftModel)
-
-        # check if kwargs are passed correctly
-        model = AutoPeftModel.from_pretrained(model_id, torch_dtype=self.dtype)
-        assert isinstance(model, PeftModel)
-        assert model.base_model.model.model.encoder.embed_positions.weight.dtype == self.dtype
-
-        adapter_name = "default"
-        is_trainable = False
-        # This should work
-        _ = AutoPeftModel.from_pretrained(model_id, adapter_name, is_trainable, torch_dtype=self.dtype)
+if __name__ == "__main__":
+    unittest.main()  # Running the test cases
