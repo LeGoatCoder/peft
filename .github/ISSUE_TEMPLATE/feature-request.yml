@@ -1,16 +1,26 @@
+# This is a YAML configuration file for a feature request form
 name: "\U0001F680 Feature request"
+# A short description of the form
 description: Submit a proposal/request for a new feature
+# A list of labels associated with the form
 labels: [ "feature" ]
+
+# Defines the form fields
 body:
+  # The first field is a textarea for the feature request
   - type: textarea
     id: feature-request
+    # Validation rules for the field
     validations:
       required: true
+    # Additional attributes for the field
     attributes:
       label: Feature request
+      # A longer description of the field, displayed as a tooltip
       description: |
         A clear and concise description of the feature proposal. Please provide a link to the paper and code in case they exist.
 
+  # The second field is a textarea for the motivation behind the feature request
   - type: textarea
     id: motivation
     validations:
@@ -20,6 +30,7 @@ body:
       description: |
         Please outline the motivation for the proposal. Is your feature request related to a problem? 
 
+  # The third field is a textarea for the user's contribution to the feature request
   - type: textarea
     id: contribution
     validations:
@@ -27,4 +38,4 @@ body:
     attributes:
       label: Your contribution
       description: |
-        Is there any way that you could help, e.g. by submitting a PR? 
+        Is there any way that you could help, e.g. by submitting a PR?
